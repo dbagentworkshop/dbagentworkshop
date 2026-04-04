@@ -72,12 +72,13 @@ A **vector search index** turns text into embeddings so the system can find sema
 
 Click on `knowledge_base_index`, then `Sample Data` to see sample data from the knowledge base index. We will create a knowledge assistant which queries this index later. You can also click on `support_tickets_index` to view the support tickets index.
 
-At a high level, **source tables** in Unity Catalog feed **vector search indexes**; the **Knowledge Assistant** at query time retrieves from those indexes (not from the raw tables).
+At a high level, **source tables** in Unity Catalog feed **vector search indexes** (sync jobs load from tables into indexes); the **Knowledge Assistant** at query time retrieves from those indexes (not from the raw tables).
 
 ```mermaid
 flowchart TB
   ka_agent[Knowledge Assistant]
   subgraph uc_ka ["Unity Catalog: bricks_lab.default"]
+    direction TB
     subgraph uc_ka_idx ["Vector search indexes"]
       kb_index[knowledge_base_index]
       st_index[support_tickets_index]
@@ -86,8 +87,6 @@ flowchart TB
       kb_table[knowledge_base table]
       st_table[support_tickets table]
     end
-    kb_table --> kb_index
-    st_table --> st_index
   end
   ka_agent --> kb_index
   ka_agent --> st_index
@@ -208,6 +207,7 @@ flowchart TB
   sa --> ka
   sa --> genie
   subgraph uc_full ["Unity Catalog: bricks_lab.default"]
+    direction TB
     subgraph uc_idx ["Vector search indexes"]
       kb_idx[knowledge_base_index]
       st_idx[support_tickets_index]
@@ -218,8 +218,6 @@ flowchart TB
       bill_tbl[billing table]
       cust_tbl[customers table]
     end
-    kb_tbl --> kb_idx
-    st_tbl --> st_idx
   end
   ka --> kb_idx
   ka --> st_idx
