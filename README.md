@@ -72,7 +72,7 @@ A **vector search index** turns text into embeddings so the system can find sema
 
 Click on `knowledge_base_index`, then `Sample Data` to see sample data from the knowledge base index. We will create a knowledge assistant which queries this index later. You can also click on `support_tickets_index` to view the support tickets index.
 
-At a high level, **source tables** in Unity Catalog feed **vector search indexes** (sync jobs load from tables into indexes); the **Knowledge Assistant** at query time retrieves from those indexes (not from the raw tables).
+At a high level, **source tables** in Unity Catalog feed **vector search indexes** (sync jobs load from tables into indexes); the **Knowledge Assistant** at query time retrieves from those indexes (not from the raw tables). In the diagram, **vector search indexes** are drawn **above** their source **tables**; each downward arrow **pairs** one index with its table (not the direction of the sync job).
 
 ```mermaid
 flowchart TB
@@ -87,6 +87,8 @@ flowchart TB
       kb_table[knowledge_base table]
       st_table[support_tickets table]
     end
+    kb_index --> kb_table
+    st_index --> st_table
   end
   ka_agent --> kb_index
   ka_agent --> st_index
@@ -197,7 +199,7 @@ A key aspect of Genie is also that you can continuously guide it and give it exa
 
 ## Part 3: Orchestrating with a Supervisor Agent
 
-The **Supervisor Agent** sits above specialized capabilities: it **routes** each user question to the **Knowledge Assistant** (unstructured / RAG over indexes) or to the **Genie space** (structured / SQL over tables), then returns one answer. The diagram reads top to bottom: **Supervisor Agent** → **Knowledge Assistant / Genie space** → **indexes in UC** → **tables in UC**.
+The **Supervisor Agent** sits above specialized capabilities: it **routes** each user question to the **Knowledge Assistant** (unstructured / RAG over indexes) or to the **Genie space** (structured / SQL over tables), then returns one answer. The diagram reads top to bottom: **Supervisor Agent** → **Knowledge Assistant / Genie space** → **indexes in UC** (above) → **tables in UC** (below). Downward arrows between an index and a table **pair** the vector index with its source table; **Genie** attaches only to the **billing** and **customers** tables.
 
 ```mermaid
 flowchart TB
@@ -218,6 +220,8 @@ flowchart TB
       bill_tbl[billing table]
       cust_tbl[customers table]
     end
+    kb_idx --> kb_tbl
+    st_idx --> st_tbl
   end
   ka --> kb_idx
   ka --> st_idx
