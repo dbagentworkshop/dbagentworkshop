@@ -28,7 +28,7 @@ Next click on `Databricks Workspace`. It should bring you to the Databricks cons
 
 Familiarise with the Databricks workspace layout above.
 
-## Part 1: Build Your First Knowledge Assistant
+## Part 1: Build a Knowledge Assistant for querying indexes (knowledge base and support tickets indexes)
 
 ### 1.0 Explore tables in a Catalog
 
@@ -36,7 +36,7 @@ Let's start with some low hanging fruit - creating a knowledge agent that’s ab
 
 ![alt text](images/1_0-catalog.png)
 
-TODO: explain Catalog
+**Unity Catalog (UC)** is Databricks’ unified governance layer for organizing data and AI assets. Assets are named in three levels: **catalog** → **schema** → **table** (or other objects). In this lab, `bricks_lab` is the catalog, `default` is the schema, and tables such as `billing` and `customers` live under that schema.
 
 Steps:
 1. Click on `Catalog` on the left panel.
@@ -45,7 +45,7 @@ Steps:
 4. Expand `Tables`.
 5. Click on `billing`.
 6. Click on `Sample Data` tab.
-7. Click on `Start compute` button.
+7. Click on `Select compute` button.
 
 ![alt text](images/1_0-start-compute.png)
 
@@ -53,7 +53,7 @@ In the popup, there should be already a resource selected for you. Otherwise cli
 
 ![alt text](images/1_0-view-sample-data.png)
 
-Wait a few minutes until you see that the resourece has started. Once ready, the sample data should load. Examine the sample data here. This is one of the tables we will be using to create our Knowledge Assistant.
+Wait a few minutes until you see that the resource has started. Once ready, the sample data should load. Examine the sample data here. This is one of the tables we will be using to create our Knowledge Assistant.
 
 ### 1.1 Explore a Vector Search Index
 
@@ -61,13 +61,12 @@ Now the first step to making this data work for us is to create a vector search 
 
 Why Vector Search?
 
-    Provides efficient retrieval of relevant chunks of data for grounding LLM responses.
-    Two common types:
-        Triggered updates (for static knowledge bases like FAQs/policies).
-        Continuous updates (for dynamic sources like support tickets).
+- It provides efficient retrieval of relevant chunks of data for grounding LLM responses.
+- Two common **sync** modes for indexes:
+  - **Triggered updates** — best when the source changes rarely (e.g. FAQs and policies).
+  - **Continuous updates** — best when the source changes often (e.g. support tickets that arrive daily).
 
-TODO: explain Vector search index
-TODO: add <This is also a chance to talk about the types of VS indexes, and say that you can do triggered for knowledge base that updates infrequently and continuous for something like support tickets that are evolving daily.
+A **vector search index** turns text into embeddings so the system can find semantically similar passages even when the user’s wording does not match your documents exactly. Your instructor can show how to choose triggered vs continuous when you create an index.
 
 ![alt text](images/1_1-view-index.png)
 
@@ -108,6 +107,8 @@ Next, add the second index for support tickets. Again, under `Configure Knowledg
 5. For `Text Column`, select `formatted_content`.
 6. For `Describe the content`, key in `Knowledge base containing historical tickets and resolutions of past customer issues.`.
 
+![alt text](images/1_2-second-index.png)
+
 Finally, click on `Create Agent`. Wait for a few minutes for the agent to create.
 
 ![alt text](images/1_2-ask-question.png)
@@ -118,4 +119,163 @@ Once the agent is created, we’ll want to give it a test! Let's ask it a questi
 
 You’ll see a pretty verbose response with a number of footnotes. We’re going to make it more concise later, but what you can see here is that the Knowledge Assistant bases its responses heavily on our sources!
 
+Click on `View trace` to explore the documents which have been pulled from your knowledge base (index).
 
+![alt text](images/1_2-view-trace.png)
+
+Very cool, we’ve easily put together our first agent. However, real questions are often a bit more personal to a specific user (e.g. a specific customer) and that data is not available in our knowledge base. Let's see how we can contextualise answers in the next part of this workshop.
+
+## Part 2: Creating a Genie space for querying structured data (billing and customer tables)
+
+We’ve built an awesome product support Agent, but customers ask wide range of questions, e.g. “Why is my bill higher this month?” - Can’t be answered by KA.
+
+**Genie** is Databricks’ natural-language interface for **structured** data: you ask questions in plain English, and Genie generates and runs SQL against tables it is allowed to access (you do not write the SQL yourself). A **Genie space** is a configured environment (connected data, instructions, and context) where those questions run—think of it as a governed “chat over your tables” for analysts and apps.
+
+![alt text](images/1_0-view-sample-data.png)
+
+Remember the billing table which we saw earlier? How do we make queries on this table easily? We have created a Genie space for you to explore billing and customer data for a specific customer. Let's begin.
+
+### 2.1 Query Structured Data with Genie
+
+Genie spaces allow natural language queries over structured data (SQL tables).
+Genie is pre-configured to access billing and customer tables.
+
+In the interest of time, we have created a Genie space for you.
+
+![alt text](images/2_1-genie-console.png)
+
+Navigate to Genie by clicking on `Genie` in the left side panel. A Genie space has been created for you - click on `Agent Bricks Genie`.
+
+> Outside of this workshop, to create your own Genie space, simply go to `Genie` and click on `Create`. You do NOT need to do this for this workshop.
+
+![alt text](images/2_1-genie-question.png)
+
+We can use this Genie room to do more meta analysis, such as finding out the average total bill, by just asking it in natural language. In the text box, key in `What is the average total amount billed to customer?` and press enter.
+
+![alt text](images/2_1-genie-response.png)
+
+Here you can see the results of your query. Explore the various tools here, like `Show code`, `Share`, and rating whether the response is useful or not in `Is this useful?`.
+
+![alt text](images/2_1-genie-instructions.png)
+
+A key aspect of Genie is also that you can continuously guide it and give it examples and instructions to help it understand your unique data structures. Click on `Context`, then `Instructions`, then `Text`. Here you can specify instructions on guiding how you want Genie to respond, e.g. making answers more concise. Leave this for now.
+
+## Part 3: Orchestrating with a Supervisor Agent
+
+### 3.1 Creating a Supervisor Agent and Querying Genie space as an Agent
+
+So if our Genie space is our way to answer questions regarding customer-specific or billing data (i.e. retrieve structured data), how do we tie it together with the Knowledge Assistant? In other words, how do we marry both of them together to create a multi-purpose assistant?
+
+Fortunately, a Genie room also can be used as an Agent!
+
+![alt text](images/3_1-sa-create.png)
+
+To see how this works, let's go back to `Agents` in the side panel, and click `Create` to create a new Supervisor Agent this time.
+
+![alt text](images/3_1-sa-select.png)
+
+Select `Supervisor Agent`.
+
+A Supervisor Agent is basically a multi-agent supervisor which allows you to combine Genie spaces, other agents, and tools together in a powerful agent system that can answer questions and take actions. It is ideal for providing insights across all your structured and unstructured data, assisting users with your platform, and more.
+
+![alt text](images/3_1-sa-name.png)
+
+Fill in the name as `[YourName]-BricksLab-MultiAgent` (e.g. `Jarrett-BricksLab-MultiAgent`) and description as `Overarching supervisor that determines which spaces and agents to route for different queries.`. The better you describe resources in Databricks, the better Databricks will be able to give you the right answers (e.g. Genie, agents)
+
+Now that we have given a high level description of what we want this supervisor to do, we can start adding our Genie space!
+
+![alt text](images/3_1-sa-genie-space.png)
+
+Under `Configure Agents`:
+1. Under `Type`, select `Genie Space`.
+2. Under `Genie space` select `Agent Bricks Genie` from the dropdown menu.
+3. The `Describe the content` field is typically **auto-populated** when you select the space (for example, text about billing and customer data); you can leave it as-is.
+4. Click `Add`.
+
+Next, we will add our Knowledge Assistant which answers questions from our knowledge base and support ticket indexes.
+
+![alt text](images/3_1-sa-ka.png)
+
+Under `Configure Agents`:
+1. Under `Type`, select `Agent Endpoint`.
+2. Under `Agent Endpoint`, select your Knowledge Assistant’s endpoint from the dropdown (it may show your agent name or an ID such as `ka-...-endpoint`).
+3. The `Describe the content` field is typically **auto-populated** from your Knowledge Assistant; you do not need to re-type it.
+4. Click `Create Agent`.
+
+Now we have created our Supervisor Agent! It can seek answers from 2 places:
+1. If it needs to query billing or customer data, it can leverage the Genie space.
+2. Else, if it needs to look up product documentation or support tickets, it can route the request over to the Knowledge Assistant.
+
+It’ll handle all of this orchestration for you and come back with an answer.
+
+But first, let us sort out the permissions.
+
+![alt text](images/3_1-sa-type.png)
+
+Click on the text box.
+
+![alt text](images/3_1-sa-authorize.png)
+
+A popup will ask you to approve the permissions. Click on `Authorize`.
+
+> Databricks is designed with governance at its core. Here Databricks is asking you if you would like your Supervisor Agent to have permission to use the Genie space and Knowledge Assistant.
+
+![alt text](images/3_1-sa-q1.png)
+
+Creating the agent will take a few minutes. Once it is ready, test your Supervisor Agent by asking a tricky question - `Why did my bill go up last month?`.
+
+![alt text](images/3_1-sa-a1.png)
+
+Uh oh, it seems like the Supervisor Agent doesn't have enough context. We have a problem - when we say `my bill`, who are we referring to exactly? The agent has no idea!
+
+Now, for the purposes of this lab, let's assume that we are a call support operator and a customer with the ID `CUS-10001` has just asked us the same question about why their bill went up last month.
+
+![alt text](images/3_1-sa-q2.png)
+
+Let's refine our question - this time let's be more specific and ask this instead - `My user ID is ‘CUS-10001’ and the date is June 2025. Why did my bill go up last month?`.
+
+![alt text](images/3_1-sa-a2.png)
+
+Explore the thinking process of the agent, and examine the data it is trying to pull. Do these make sense now? Are we able to pull more relevant data now that we have more context?
+
+### 3.2 Using a Supervisor Agent to also Query a Knowledge Assistant agent
+
+Awesome! Now let's switch gears and test the Supervisor Agent if it can still answer other questions?
+
+![alt text](images/3_2-sa-q3.png)
+
+Let’s see what happens if I ask it a naive question: `My phone is getting really hot. What does ‘hot spot’ mean, and how do I turn it off?`.
+
+![alt text](images/3_2-sa-a3.png)
+
+Now you’ll see the Supervisor Agent handing off to our Knowledge Assistant agent which provides technical support.
+
+One thing to note though - notice that the Supervisor Agent still gives us a very detailed response. That is very accurate and comprehensive, however, it might be too much info for our customers (imagine a chatbot support agent on your website). How do we configure our Supervisor Agent to be more concise?
+
+## Part 4. Improve Quality with Instructions
+
+To guide our Supervisor Agent to be more concise, let's add some instructions to guide its response.
+
+### 4.1 Adding Instructions to guide Supervisor Agent
+
+![alt text](images/4_1-agents-console-sa.png)
+
+In the left side panel, click on `Agents`. Select `[YourName]-BricksLab-MultiAgent` which is your Supervisor agent.
+
+![alt text](images/4_1-sa-update-instructions.png)
+
+Expand `Optional`, then under `Instructions` key in `Keep the responses VERY short, four sentences max.`. Click `Update Agent`.
+
+![alt text](images/4_1-sa-q.png)
+
+Now that we have updated the Supervisor Agent, we can expect a concise answer. Let's ask a question to the Supervisor Agent - `My phone is getting really hot. What does ‘hot spot’ mean, and how do I turn it off?`.
+
+![alt text](images/4_1-sa-shorter-answer.png)
+
+Perfect! Now we see that after the Supervisor Agent displays its thinking process, its final answer is much shorter now!
+
+## Conclusion
+
+And just like that, you’ve not only created a multi-agent system that can reference various data sources and types - you’ve also shown how you can guide this system through simple natural language. Congratulations!
+
+Now go forth and update your LinkedIn as an “Agent Bricks Master!”
