@@ -72,6 +72,23 @@ A **vector search index** turns text into embeddings so the system can find sema
 
 Click on `knowledge_base_index`, then `Sample Data` to see sample data from the knowledge base index. We will create a knowledge assistant which queries this index later. You can also click on `support_tickets_index` to view the support tickets index.
 
+At a high level, **source tables** in Unity Catalog are indexed for semantic search; the **Knowledge Assistant** retrieves from those **vector search indexes** (not from the raw tables at answer time).
+
+```mermaid
+flowchart TB
+  subgraph uc_ka ["Unity Catalog: bricks_lab.default"]
+    kb_table[knowledge_base table]
+    st_table[support_tickets table]
+  end
+  kb_index[knowledge_base_index]
+  st_index[support_tickets_index]
+  ka_agent[Knowledge Assistant]
+  kb_table --> kb_index
+  st_table --> st_index
+  kb_index --> ka_agent
+  st_index --> ka_agent
+```
+
 ### 1.2 Build the Knowledge Assistant Agent
 
 ![alt text](images/1_1-create-agent.png)
@@ -140,6 +157,19 @@ Remember the billing table which we saw earlier? How do we make queries on this 
 Genie spaces allow natural language queries over structured data (SQL tables).
 Genie is pre-configured to access billing and customer tables.
 
+Here the Genie space queries **tables directly** via generated SQL (no vector index in this path).
+
+```mermaid
+flowchart TB
+  subgraph uc_genie ["Unity Catalog: bricks_lab.default"]
+    billing_table[billing table]
+    customers_table[customers table]
+  end
+  genie_space[Agent Bricks Genie space]
+  billing_table --> genie_space
+  customers_table --> genie_space
+```
+
 In the interest of time, we have created a Genie space for you.
 
 ![alt text](images/2_1-genie-console.png)
@@ -161,6 +191,31 @@ Here you can see the results of your query. Explore the various tools here, like
 A key aspect of Genie is also that you can continuously guide it and give it examples and instructions to help it understand your unique data structures. Click on `Context`, then `Instructions`, then `Text`. Here you can specify instructions on guiding how you want Genie to respond, e.g. making answers more concise. Leave this for now.
 
 ## Part 3: Orchestrating with a Supervisor Agent
+
+The **Supervisor Agent** sits above specialized capabilities: it **routes** each user question to the **Knowledge Assistant** (unstructured / RAG over indexes) or to the **Genie space** (structured / SQL over tables), then returns one answer.
+
+```mermaid
+flowchart TB
+  sa[Supervisor Agent]
+  ka[Knowledge Assistant]
+  genie[Agent Bricks Genie space]
+  subgraph uc_full ["Unity Catalog: bricks_lab.default"]
+    kb_t[knowledge_base]
+    st_t[support_tickets]
+    bill_t[billing]
+    cust_t[customers]
+  end
+  kb_idx[knowledge_base_index]
+  st_idx[support_tickets_index]
+  kb_t --> kb_idx
+  st_t --> st_idx
+  bill_t --> genie
+  cust_t --> genie
+  kb_idx --> ka
+  st_idx --> ka
+  sa --> ka
+  sa --> genie
+```
 
 ### 3.1 Creating a Supervisor Agent and Querying Genie space as an Agent
 
