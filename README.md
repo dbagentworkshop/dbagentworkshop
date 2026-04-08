@@ -149,9 +149,11 @@ Very cool, we’ve easily put together our first agent. However, real questions 
 
 ## Part 2: Creating a Genie space for querying structured data (billing and customer tables)
 
-We’ve built an awesome product support Agent, but customers ask wide range of questions, e.g. “Why is my bill higher this month?” - Can’t be answered by KA.
+Our Knowledge Assistant excels at answering questions grounded in unstructured knowledge — documents, FAQs, and support tickets. But customers also ask data-specific questions like “Why is my bill higher this month?” where the answer lives in rows and columns, not paragraphs. This is exactly where **Genie** shines.
 
-**Genie** is Databricks’ natural-language interface for **structured** data: you ask questions in plain English, and Genie generates and runs SQL against tables it is allowed to access (you do not write the SQL yourself). A **Genie space** is a configured environment (connected data, instructions, and context) where those questions run—think of it as a governed “chat over your tables” for analysts and apps.
+**Genie** is Databricks’ natural-language interface purpose-built and optimized for **structured** data: you ask questions in plain English, and Genie translates them into SQL, runs the query against governed tables, and returns the results — no SQL writing required. A **Genie space** is a configured environment (connected data, instructions, and context) where those questions run—think of it as a governed “chat over your tables” for analysts and apps.
+
+> **Knowledge Assistant vs Genie — when to use which?** Each is optimized for a different shape of data. The **Knowledge Assistant** retrieves and synthesizes answers from unstructured sources (documents, knowledge bases, tickets) using vector search. **Genie** generates precise SQL queries over structured tables (billing, customer records, metrics). For use cases that span both, a **Supervisor Agent** (Part 3) orchestrates them into a single experience. And if you need even more flexibility — such as calling external APIs or custom logic — Databricks Agents also support custom tools and MCP integrations.
 
 ![alt text](images/1_0-view-sample-data.png)
 
@@ -199,7 +201,7 @@ A key aspect of Genie is also that you can continuously guide it and give it exa
 
 ## Part 3: Orchestrating with a Supervisor Agent
 
-The **Supervisor Agent** sits above specialized capabilities: it **routes** each user question to the **Knowledge Assistant** (unstructured / RAG over indexes) or to the **Genie space** (structured / SQL over tables), then returns one answer. The diagram reads top to bottom: **Supervisor Agent** → **Knowledge Assistant / Genie space** → **indexes in UC** (above) → **tables in UC** (below). Downward arrows between an index and a table **pair** the vector index with its source table; **Genie** attaches only to the **billing** and **customers** tables.
+Now that we have two specialized capabilities — the **Knowledge Assistant** for unstructured knowledge and **Genie** for structured data — the natural next step is to bring them together. The **Supervisor Agent** does exactly this: it intelligently **routes** each user question to the right specialist and returns one unified answer.
 
 ```mermaid
 flowchart TB
@@ -231,9 +233,9 @@ flowchart TB
 
 ### 3.1 Creating a Supervisor Agent and Querying Genie space as an Agent
 
-So if our Genie space is our way to answer questions regarding customer-specific or billing data (i.e. retrieve structured data), how do we tie it together with the Knowledge Assistant? In other words, how do we marry both of them together to create a multi-purpose assistant?
+So if our Genie space is our way to answer questions regarding customer-specific or billing data (i.e. retrieve structured data), how do we tie it together with the Knowledge Assistant? In other words, how do we bring both of them together into a single, unified assistant?
 
-Fortunately, a Genie room also can be used as an Agent!
+A Genie space can also serve as an agent within a larger system — this is what makes the Supervisor Agent so powerful.
 
 ![alt text](images/3_1-sa-create.png)
 
@@ -243,7 +245,7 @@ To see how this works, let's go back to `Agents` in the side panel, and click `C
 
 Select `Supervisor Agent`.
 
-A Supervisor Agent is basically a multi-agent supervisor which allows you to combine Genie spaces, other agents, and tools together in a powerful agent system that can answer questions and take actions. It is ideal for providing insights across all your structured and unstructured data, assisting users with your platform, and more.
+A **Supervisor Agent** is a multi-agent orchestrator that combines Genie spaces, other agents, and tools into a unified agent system. It intelligently routes questions to the right specialist — Genie for structured data queries, Knowledge Assistant for document-based answers — and can also incorporate custom tools for additional capabilities. It is ideal for providing insights across all your structured and unstructured data, assisting users with your platform, and more.
 
 ![alt text](images/3_1-sa-name.png)
 
@@ -270,10 +272,10 @@ Under `Configure Agents`:
 4. Click `Create Agent`.
 
 Now we have created our Supervisor Agent! It can seek answers from 2 places:
-1. If it needs to query billing or customer data, it can leverage the Genie space.
-2. Else, if it needs to look up product documentation or support tickets, it can route the request over to the Knowledge Assistant.
+1. If it needs to query billing or customer data, it routes to the Genie space for precise SQL-based answers.
+2. If it needs to look up product documentation or support tickets, it routes to the Knowledge Assistant for retrieval-augmented answers.
 
-It’ll handle all of this orchestration for you and come back with an answer.
+It handles all of this orchestration for you and comes back with a single, unified answer.
 
 But first, let us sort out the permissions.
 
@@ -307,7 +309,7 @@ Explore the thinking process of the agent, and examine the data it is trying to 
 
 ### 3.2 Using a Supervisor Agent to also Query a Knowledge Assistant agent
 
-Awesome! Now let's switch gears and test the Supervisor Agent if it can still answer other questions?
+Awesome! Now let's switch gears and test if the Supervisor Agent can also handle questions that require unstructured knowledge.
 
 ![alt text](images/3_2-sa-q3.png)
 
@@ -315,7 +317,7 @@ Let’s see what happens if I ask it a naive question: `My phone is getting real
 
 ![alt text](images/3_2-sa-a3.png)
 
-Now you’ll see the Supervisor Agent handing off to our Knowledge Assistant agent which provides technical support.
+Now you’ll see the Supervisor Agent intelligently routing this to our Knowledge Assistant agent, which is optimized for exactly this kind of product support question.
 
 One thing to note though - notice that the Supervisor Agent still gives us a very detailed response. That is very accurate and comprehensive, however, it might be too much info for our customers (imagine a chatbot support agent on your website). How do we configure our Supervisor Agent to be more concise?
 
@@ -343,6 +345,6 @@ Perfect! Now we see that after the Supervisor Agent displays its thinking proces
 
 ## Conclusion
 
-And just like that, you’ve not only created a multi-agent system that can reference various data sources and types - you’ve also shown how you can guide this system through simple natural language. Congratulations!
+And just like that, you’ve built a multi-agent system that combines the best of both worlds — the Knowledge Assistant’s strength in unstructured knowledge retrieval and Genie’s precision over structured data — orchestrated seamlessly by a Supervisor Agent. You’ve also seen how simple natural language instructions can fine-tune the system’s behavior. Congratulations!
 
 Now go forth and update your LinkedIn as an “Agent Bricks Master!”
