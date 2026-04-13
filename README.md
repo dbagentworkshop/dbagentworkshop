@@ -196,9 +196,9 @@ We can use this Genie room to do more meta analysis, such as finding out the ave
 
 Here you can see the results of your query. Explore the various tools here, like `Show code`, `Share`, and rating whether the response is useful or not in `Is this useful?`.
 
-![alt text](images/2_1-genie-instructions.png)
+![alt text](images/2_1-genie-instructions.jpg)
 
-A key aspect of Genie is also that you can continuously guide it and give it examples and instructions to help it understand your unique data structures. Click on `Context`, then `Instructions`, then `Text`. Here you can specify instructions on guiding how you want Genie to respond, e.g. making answers more concise. Leave this for now.
+A key aspect of Genie is also that you can continuously guide it and give it examples and instructions to help it understand your unique data structures. Click on `Configure`, then `Instructions`, then `Text`. Here you can specify instructions on guiding how you want Genie to respond, e.g. making answers more concise. Leave this for now.
 
 ## Part 3: Orchestrating with a Supervisor Agent
 
