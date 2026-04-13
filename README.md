@@ -2,9 +2,10 @@
 
 ## Setup
 
+![alt text](images/0-signup.jpg)
 ![alt text](images/0-login.png)
 
-In Chrome or Edge, go to https://dbfe.vocareum.com/, then click on `Log in`. Key in your email address, and leave password blank. Click on `Send one-time code`. Check your inbox for the OTP and key it in.
+In Chrome or Edge, go to https://dbfe.vocareum.com/, then click on `Sign up` if you do not already have an account, or `Log in` if you already do. Key in your email address, and leave password blank. Click on `Send one-time code`. Check your inbox for the OTP and key it in.
 
 > If you get an error which says `Security verification failed`, use Chrome or Edge, and do NOT use incognito.
 
