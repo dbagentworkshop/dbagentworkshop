@@ -17,13 +17,15 @@ Enter the access code given by the instructor.
 
 ![alt text](images/0-start-lab.png)
 
-If the `Lab Status` does not say `Ready`, click on `Start lab`. The lab should take a few minutes to start. Once the `Lab Status` says `Ready`, you should see the Databricks console.
+The lab should start immediately and `Lab Status` should say `Ready`.
+> If the `Lab Status` does not say `Ready`, click on `Start lab`. The lab should take a few minutes to start. Once the `Lab Status` says `Ready`, you should see the Databricks console.
 
 > If you see an error message which says `Lab ended` or `Budget exceeded` or `Your total lab usage time of 240 minutes has exceeded the total allocated time of 240 minutes`, please inform the instructor. Instructors, please go to `Class`, search for student's email, click on `Budget`, and set `Total time budget` to `User specfic` and `3000 minutes`. Do the same for `Monthly time budget` and click `Save`. Ask student to click on refresh button in the Vocareum lab page, lab should automatically start.
 
 ![alt text](images/0-open-databricks-workspace.png)
 
 Next click on `Databricks Workspace`. It should bring you to the Databricks console in a new tab. You will be doing the rest of the lab here.
+> If you get an error that says "contact your site administrator", please ensure you have clicked on `Databricks Workspace` above.
 
 ![alt text](images/0-workspace-layout.png)
 
@@ -46,15 +48,11 @@ Steps:
 4. Expand `Tables`.
 5. Click on `billing`.
 6. Click on `Sample Data` tab.
-7. Click on `Select compute` button.
-
-![alt text](images/1_0-start-compute.png)
-
-In the popup, there should be already a resource selected for you. Otherwise click on the drop down and select the only resource there. Click on `Start and Close`.
+7. Wait for a while for the sample tabular data to load.
 
 ![alt text](images/1_0-view-sample-data.png)
 
-Wait a few minutes until you see that the resource has started. Once ready, the sample data should load. Examine the sample data here. This is one of the tables we will be using to create our Knowledge Assistant.
+Examine the sample data here. This is one of the tables we will be using to create our Knowledge Assistant.
 
 ### 1.1 Explore a Vector Search Index
 
@@ -184,7 +182,9 @@ In the interest of time, we have created a Genie space for you.
 
 ![alt text](images/2_1-genie-console.png)
 
-Navigate to Genie by clicking on `Genie` in the left side panel. A Genie space has been created for you - click on `Agent Bricks Genie`.
+Navigate to Genie by clicking on `Genie` in the left side panel.
+
+If you see 1 Genie space, click on `Agent Bricks Genie`. If however you see 3 Genie spaces, click on `Agent Bricks Genie (2)`.
 
 > Outside of this workshop, to create your own Genie space, simply go to `Genie` and click on `Create`. You do NOT need to do this for this workshop.
 
@@ -258,7 +258,7 @@ Now that we have given a high level description of what we want this supervisor 
 
 Under `Configure Agents`:
 1. Under `Type`, select `Genie Space`.
-2. Under `Genie space` select `Agent Bricks Genie` from the dropdown menu.
+2. Under `Genie space`, if you saw 1 Genie space earlier, select `Agent Bricks Genie` from the dropdown menu. If however you saw 3 Genie spaces earlier, select `Agent Bricks Genie (2)` instead from the dropdown menu.
 3. The `Describe the content` field is typically **auto-populated** when you select the space (for example, text about billing and customer data); you can leave it as-is.
 4. Click `Add`.
 
